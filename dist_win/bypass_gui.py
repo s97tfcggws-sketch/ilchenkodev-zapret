@@ -1815,6 +1815,20 @@ def start_gui_server(host="127.0.0.1", port=58180):
         print("[!] For a native app experience, install it using: pip install pywebview")
         print("[!] Falling back to opening dashboard in your default browser...")
         
+        # On Windows, if pywebview fails to open the window, show a native popup alert
+        if OS_TYPE == "Windows":
+            try:
+                import ctypes
+                # MB_ICONINFORMATION = 0x40
+                ctypes.windll.user32.MessageBoxW(
+                    0, 
+                    "В системе отсутствует компонент Microsoft Edge WebView2 Runtime, необходимый для работы приложения в виде отдельного окна.\n\nПрограмма откроется в вашем обычном веб-браузере. Для работы в виде отдельного окна скачайте и установите WebView2 Runtime с сайта Microsoft.", 
+                    "ILCHENKODEV - Требуется WebView2 Runtime", 
+                    0x40
+                )
+            except Exception:
+                pass
+        
         # Auto-launch default browser tab
         webbrowser.open(url)
         
