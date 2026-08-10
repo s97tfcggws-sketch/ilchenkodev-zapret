@@ -1,0 +1,75 @@
+name: Build Standalone Desktop Apps
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pywebview
+
+      - name: Build macOS App Bundle
+        run: |
+          cd dist_mac
+          pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.icns" --add-data "bin:bin" --add-data "lists:lists" bypass_gui.py
+          mkdir -p ../dist
+          mv dist/ILCHENKODEV.app ../dist/
+
+      - name: Create DMG Disk Image
+        run: |
+          hdiutil create -volname "ILCHENKODEV" -srcfolder "dist/ILCHENKODEV.app" -ov -format UDZO "dist/ILCHENKODEV.dmg"
+
+      - name: Upload macOS DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ILCHENKODEV-macOS-DMG
+          path: dist/ILCHENKODEV.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller pywebview
+
+      - name: Build Windows Executable
+        shell: pwsh
+        run: |
+          cd dist_win
+          pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
+          New-Item -ItemType Directory -Force -Path "../dist"
+          Copy-Item -Path "dist/ILCHENKODEV" -Destination "../dist/ILCHENKODEV" -Recurse -Force
+
+      - name: Package Windows ZIP
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "dist/ILCHENKODEV/*" -DestinationPath "dist/ILCHENKODEV-Windows.zip" -Force
+
+      - name: Upload Windows ZIP Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ILCHENKODEV-Windows-ZIP
+          path: dist/ILCHENKODEV-Windows.zip
