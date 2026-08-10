@@ -61,7 +61,7 @@ jobs:
         shell: pwsh
         run: |
           cd dist_win
-          pyinstaller --onefile --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
+          pyinstaller --onefile --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" --add-data "utils;utils" --add-data "*.bat;." bypass_gui.py
           New-Item -ItemType Directory -Force -Path "../dist"
           Copy-Item -Path "dist/ILCHENKODEV.exe" -Destination "../dist/ILCHENKODEV.exe" -Force
 
