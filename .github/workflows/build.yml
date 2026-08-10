@@ -3,6 +3,8 @@ name: Build Standalone Desktop Apps
 on:
   push:
     branches: [ main, master ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -73,3 +75,31 @@ jobs:
         with:
           name: ILCHENKODEV-Windows-ZIP
           path: dist/ILCHENKODEV-Windows.zip
+
+  release:
+    needs: [build-macos, build-windows]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - name: Download macOS DMG
+        uses: actions/download-artifact@v4
+        with:
+          name: ILCHENKODEV-macOS-DMG
+          path: artifacts
+
+      - name: Download Windows ZIP
+        uses: actions/download-artifact@v4
+        with:
+          name: ILCHENKODEV-Windows-ZIP
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/ILCHENKODEV.dmg
+            artifacts/ILCHENKODEV-Windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
