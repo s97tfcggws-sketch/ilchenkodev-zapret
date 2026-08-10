@@ -61,14 +61,14 @@ jobs:
         shell: pwsh
         run: |
           cd dist_win
-          pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
+          pyinstaller --onefile --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
           New-Item -ItemType Directory -Force -Path "../dist"
-          Copy-Item -Path "dist/ILCHENKODEV" -Destination "../dist/ILCHENKODEV" -Recurse -Force
+          Copy-Item -Path "dist/ILCHENKODEV.exe" -Destination "../dist/ILCHENKODEV.exe" -Force
 
       - name: Package Windows ZIP
         shell: pwsh
         run: |
-          Compress-Archive -Path "dist/ILCHENKODEV/*" -DestinationPath "dist/ILCHENKODEV-Windows.zip" -Force
+          Compress-Archive -Path "dist/ILCHENKODEV.exe" -DestinationPath "dist/ILCHENKODEV-Windows.zip" -Force
 
       - name: Upload Windows ZIP Artifact
         uses: actions/upload-artifact@v4

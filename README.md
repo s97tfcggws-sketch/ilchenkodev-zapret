@@ -54,20 +54,20 @@ pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ic
 ```
 *Результат сборки (`ILCHENKODEV.app`) появится в папке `dist/`. Его можно перенести в «Программы» или на «Рабочий стол» — он полностью автономен.*
 
-### Сборка на Windows (.exe файл)
+### Сборка на Windows (единый автономный .exe файл)
 Запустите командную строку в папке проекта на Windows-ПК:
 ```cmd
 pip install pyinstaller
-pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
+pyinstaller --onefile --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
 ```
-*Результат сборки (`ILCHENKODEV.exe` со всеми зависимостями) будет находиться в папке `dist/ILCHENKODEV/`.*
+*Результат сборки — единственный файл **`ILCHENKODEV.exe`** (без каких-либо папок и зависимостей вроде `_internal`). Он будет находиться в папке `dist/`.*
 
 ---
 
 ## ☁️ Автоматическая сборка в облаке (GitHub Actions)
 
 В проект встроен рабочий процесс CI/CD для GitHub. Каждый раз, когда вы делаете `git push` в ветку `main` или `master`, GitHub автоматически запускает сборку для обеих операционных систем с привязкой иконки приложения:
-1. **Windows**: Компилирует и упаковывает автономную сборку с иконкой `icon.ico` в `.zip` архив.
+1. **Windows**: Компилирует проект в единый автономный файл `ILCHENKODEV.exe` с иконкой `icon.ico` и упаковывает его в `.zip` архив.
 2. **macOS**: Компилирует приложение с иконкой `icon.icns` и собирает его в готовый образ диска `.dmg` для простой установки перетаскиванием.
 
 Вы сможете забрать готовые файлы в разделе **Actions** вашего GitHub-репозитория.
