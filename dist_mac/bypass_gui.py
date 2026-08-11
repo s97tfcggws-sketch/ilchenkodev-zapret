@@ -250,11 +250,7 @@ def start_bypass_service(port_val, sys_proxy_val, custom_args_val, strategy_val)
             parsed_args = parsed_args.replace('start "zapret: %~n0" /min', "")
             parsed_args = parsed_args.replace('start /min', "")
             parsed_args = parsed_args.replace('"%BIN%winws.exe"', "")
-            parsed_args = parsed_args.replace('%BIN%', bin_dir).replace('"%BIN%', f'"{bin_dir}')
-            parsed_args = parsed_args.replace('%LISTS%', lists_dir).replace('"%LISTS%', f'"{lists_dir}')
-            parsed_args = parsed_args.replace('%GameFilterTCP%', "12")
-            parsed_args = parsed_args.replace('%GameFilterUDP%', "12")
-            parsed_args = parsed_args.replace('%~dp0', base_dir + "\\")
+            parsed_args = parsed_args.replace('%BIN%winws.exe', "")
             
             args_list = []
             try:
@@ -264,7 +260,18 @@ def start_bypass_service(port_val, sys_proxy_val, custom_args_val, strategy_val)
             except Exception:
                 args_list = parsed_args.split()
             
-            full_cmd = [os.path.abspath(winws_path)] + args_list
+            final_args = []
+            for arg in args_list:
+                if not arg.strip():
+                    continue
+                arg = arg.replace('%BIN%', bin_dir)
+                arg = arg.replace('%LISTS%', lists_dir)
+                arg = arg.replace('%GameFilterTCP%', "12")
+                arg = arg.replace('%GameFilterUDP%', "12")
+                arg = arg.replace('%~dp0', base_dir + "\\")
+                final_args.append(arg)
+            
+            full_cmd = [os.path.abspath(winws_path)] + final_args
             append_log(f"Executing: {' '.join(full_cmd)}", "system")
             
             startupinfo = subprocess.STARTUPINFO()
