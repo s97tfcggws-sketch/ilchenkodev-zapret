@@ -1,0 +1,6 @@
+{
+    "socks_port": "10800",
+    "sys_proxy": true,
+    "custom_args": "--split-pos=midsld --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "selected_strategy": "Custom Parameters"
+}

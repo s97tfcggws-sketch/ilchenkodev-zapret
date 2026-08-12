@@ -1,81 +1,116 @@
-name: Build Standalone Desktop Apps
+name: Build & Release
 
 on:
   push:
-    branches: [ main, master ]
     tags:
       - 'v*'
   workflow_dispatch:
 
+# ─────────────────────────────────────────────────────────────────────────────
+# macOS — builds a .app bundle (hidden from Dock via LSUIElement) → .dmg
+# ─────────────────────────────────────────────────────────────────────────────
 jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pywebview
+          pip install \
+            pyinstaller \
+            pillow \
+            pystray \
+            pyobjc-framework-Cocoa \
+            pyobjc-framework-Foundation \
+            pyobjc-core
 
-      - name: Build macOS App Bundle
+      - name: Build .app with PyInstaller
+        working-directory: dist_mac
         run: |
-          cd dist_mac
-          pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.icns" --add-data "bin:bin" --add-data "lists:lists" bypass_gui.py
-          mkdir -p ../dist
-          mv dist/ILCHENKODEV.app ../dist/
+          pyinstaller --noconfirm --clean ILCHENKODEV.spec
 
-      - name: Create DMG Disk Image
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create .dmg
         run: |
-          hdiutil create -volname "ILCHENKODEV" -srcfolder "dist/ILCHENKODEV.app" -ov -format UDZO "dist/ILCHENKODEV.dmg"
+          mkdir -p release
+          create-dmg \
+            --volname "ILCHENKODEV Bypass" \
+            --volicon "dist_mac/dist/ILCHENKODEV Bypass.app/Contents/Resources/icon-windowed.icns" \
+            --window-pos 200 120 \
+            --window-size 540 380 \
+            --icon-size 128 \
+            --icon "ILCHENKODEV Bypass.app" 130 190 \
+            --hide-extension "ILCHENKODEV Bypass.app" \
+            --app-drop-link 410 190 \
+            --no-internet-enable \
+            "release/ILCHENKODEV-macOS.dmg" \
+            "dist_mac/dist/ILCHENKODEV Bypass.app" \
+          || true
+          # Fallback: plain hdiutil if create-dmg fails (e.g. no icon)
+          if [ ! -f "release/ILCHENKODEV-macOS.dmg" ]; then
+            hdiutil create \
+              -volname "ILCHENKODEV Bypass" \
+              -srcfolder "dist_mac/dist/ILCHENKODEV Bypass.app" \
+              -ov -format UDZO \
+              "release/ILCHENKODEV-macOS.dmg"
+          fi
 
-      - name: Upload macOS DMG Artifact
+      - name: Upload macOS DMG artifact
         uses: actions/upload-artifact@v4
         with:
           name: ILCHENKODEV-macOS-DMG
-          path: dist/ILCHENKODEV.dmg
+          path: release/ILCHENKODEV-macOS.dmg
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Windows — single standalone .exe, tray only, no console, no taskbar window
+# ─────────────────────────────────────────────────────────────────────────────
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller pywebview
+          pip install pyinstaller pillow pystray
 
-      - name: Build Windows Executable
+      - name: Build .exe with PyInstaller
+        working-directory: dist_win
         shell: pwsh
         run: |
-          cd dist_win
-          pyinstaller --onefile --noconsole --uac-admin --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" --add-data "utils;utils" --add-data "*.bat;." bypass_gui.py
-          New-Item -ItemType Directory -Force -Path "../dist"
-          Copy-Item -Path "dist/ILCHENKODEV.exe" -Destination "../dist/ILCHENKODEV.exe" -Force
+          pyinstaller --noconfirm --clean ILCHENKODEV.spec
 
-      - name: Package Windows ZIP
+      - name: Collect release files
         shell: pwsh
         run: |
-          Compress-Archive -Path "dist/ILCHENKODEV.exe" -DestinationPath "dist/ILCHENKODEV-Windows.zip" -Force
+          New-Item -ItemType Directory -Force -Path release
+          Copy-Item "dist_win\dist\ILCHENKODEV.exe" "release\ILCHENKODEV.exe"
 
-      - name: Upload Windows ZIP Artifact
+      - name: Upload Windows EXE artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ILCHENKODEV-Windows-ZIP
-          path: dist/ILCHENKODEV-Windows.zip
+          name: ILCHENKODEV-Windows-EXE
+          path: release/ILCHENKODEV.exe
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Release — attaches artifacts to GitHub Release on tag push
+# ─────────────────────────────────────────────────────────────────────────────
   release:
     needs: [build-macos, build-windows]
     runs-on: ubuntu-latest
@@ -89,17 +124,27 @@ jobs:
           name: ILCHENKODEV-macOS-DMG
           path: artifacts
 
-      - name: Download Windows ZIP
+      - name: Download Windows EXE
         uses: actions/download-artifact@v4
         with:
-          name: ILCHENKODEV-Windows-ZIP
+          name: ILCHENKODEV-Windows-EXE
           path: artifacts
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: "${{ github.ref_name }}"
+          body: |
+            ## ILCHENKODEV Bypass ${{ github.ref_name }}
+
+            ### Установка
+            **macOS**: Открой `.dmg`, перетащи `.app` в Applications. Приложение запустится только в строке меню — в Dock его не будет.
+            **Windows**: Запусти `.exe` от имени администратора. Приложение появится только в системном трее.
+
+            ### Изменения
+            _See commit history for details._
           files: |
-            artifacts/ILCHENKODEV.dmg
-            artifacts/ILCHENKODEV-Windows.zip
+            artifacts/ILCHENKODEV-macOS.dmg
+            artifacts/ILCHENKODEV.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

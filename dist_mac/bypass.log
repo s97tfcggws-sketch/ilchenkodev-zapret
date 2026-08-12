@@ -1,0 +1,30 @@
+=== ILCHENKODEV Bypass Log Started ===
+[2026-08-12 14:42:46] [SYSTEM] Configuration loaded successfully.
+[2026-08-12 14:42:46] [SYSTEM] Saved active.png and inactive.png to base folder.
+[2026-08-12 14:42:56] [SYSTEM] >>> Starting bypass service...
+[2026-08-12 14:42:56] [SYSTEM] Executing: /Users/katsuna/Desktop/ilchenkodev-zapret/dist_mac/bin/mac/tpws --socks --bind-addr=127.0.0.1 --port=10800 --split-pos=midsld --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt
+[2026-08-12 14:42:56] [SYSTEM] >>> Bypass service started successfully.
+[2026-08-12 14:42:56] [STDOUT] self-built version Aug 10 2026 20:40:57
+[2026-08-12 14:42:56] [STDOUT] 
+[2026-08-12 14:42:56] [STDOUT] we have 1 user defined desync profile(s) and default low priority profile 0
+[2026-08-12 14:42:56] [STDOUT] Loading hostlist lists/list-exclude.txt
+[2026-08-12 14:42:56] [STDOUT] loading plain text list
+[2026-08-12 14:42:56] [STDOUT] Loaded 112 hosts from lists/list-exclude.txt
+[2026-08-12 14:42:56] [STDOUT] Loading hostlist lists/list-general.txt
+[2026-08-12 14:42:56] [STDOUT] loading plain text list
+[2026-08-12 14:42:56] [STDOUT] Loaded 50 hosts from lists/list-general.txt
+[2026-08-12 14:42:56] [STDOUT] Loading hostlist lists/list-google.txt
+[2026-08-12 14:42:56] [STDOUT] loading plain text list
+[2026-08-12 14:42:56] [STDOUT] Loaded 20 hosts from lists/list-google.txt
+[2026-08-12 14:42:56] [STDOUT] socks mode
+[2026-08-12 14:42:56] [STDOUT] Running as UID=501 GID=20,12,61,79,80,81,701,33,98,100,204,250,395,398,399,400
+[2026-08-12 14:42:56] [SYSTEM] >>> Adjusting system SOCKS5 proxy to ON...
+[2026-08-12 14:42:56] [SYSTEM] Enabling SOCKS proxy on: USB 10/100 LAN
+[2026-08-12 14:42:56] [SYSTEM] Enabling SOCKS proxy on: Thunderbolt Bridge
+[2026-08-12 14:42:56] [SYSTEM] Enabling SOCKS proxy on: Wi-Fi
+[2026-08-12 14:43:08] [SYSTEM] >>> Stopping bypass service...
+[2026-08-12 14:43:08] [SYSTEM] >>> Bypass service stopped.
+[2026-08-12 14:43:08] [SYSTEM] >>> Adjusting system SOCKS5 proxy to OFF...
+[2026-08-12 14:43:08] [SYSTEM] Disabling SOCKS proxy on: USB 10/100 LAN
+[2026-08-12 14:43:08] [SYSTEM] Disabling SOCKS proxy on: Thunderbolt Bridge
+[2026-08-12 14:43:08] [SYSTEM] Disabling SOCKS proxy on: Wi-Fi
