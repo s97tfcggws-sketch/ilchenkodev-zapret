@@ -22,3 +22,5 @@
 [2026-08-12 14:58:47] [SYSTEM] Enabling SOCKS proxy on: USB 10/100 LAN
 [2026-08-12 14:58:47] [SYSTEM] Enabling SOCKS proxy on: Thunderbolt Bridge
 [2026-08-12 14:58:47] [SYSTEM] Enabling SOCKS proxy on: Wi-Fi
+[2026-08-12 14:59:38] [STDOUT] shutdown: Can't assign requested address
+[2026-08-12 15:03:49] [STDOUT] shutdown: Can't assign requested address
