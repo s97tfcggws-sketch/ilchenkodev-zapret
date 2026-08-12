@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 # ─────────────────────────────────────────────────────────────────────────────
-# macOS — builds a .app bundle (hidden from Dock via LSUIElement) → .dmg
+# macOS — builds a .app (hidden from Dock via LSUIElement=True) → .dmg
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
   build-macos:
@@ -24,13 +24,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install \
-            pyinstaller \
-            pillow \
-            pystray \
-            pyobjc-framework-Cocoa \
-            pyobjc-framework-Foundation \
-            pyobjc-core
+          # pyobjc is the umbrella package — installs Cocoa, Foundation, AppKit, etc.
+          pip install pyinstaller pillow pystray pyobjc
 
       - name: Build .app with PyInstaller
         working-directory: dist_mac
@@ -43,9 +38,9 @@ jobs:
       - name: Create .dmg
         run: |
           mkdir -p release
+          # create-dmg with nice installer window; fallback to hdiutil if it fails
           create-dmg \
             --volname "ILCHENKODEV Bypass" \
-            --volicon "dist_mac/dist/ILCHENKODEV Bypass.app/Contents/Resources/icon-windowed.icns" \
             --window-pos 200 120 \
             --window-size 540 380 \
             --icon-size 128 \
@@ -55,17 +50,13 @@ jobs:
             --no-internet-enable \
             "release/ILCHENKODEV-macOS.dmg" \
             "dist_mac/dist/ILCHENKODEV Bypass.app" \
-          || true
-          # Fallback: plain hdiutil if create-dmg fails (e.g. no icon)
-          if [ ! -f "release/ILCHENKODEV-macOS.dmg" ]; then
-            hdiutil create \
-              -volname "ILCHENKODEV Bypass" \
-              -srcfolder "dist_mac/dist/ILCHENKODEV Bypass.app" \
-              -ov -format UDZO \
-              "release/ILCHENKODEV-macOS.dmg"
-          fi
+          || hdiutil create \
+               -volname "ILCHENKODEV Bypass" \
+               -srcfolder "dist_mac/dist/ILCHENKODEV Bypass.app" \
+               -ov -format UDZO \
+               "release/ILCHENKODEV-macOS.dmg"
 
-      - name: Upload macOS DMG artifact
+      - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: ILCHENKODEV-macOS-DMG
@@ -102,14 +93,14 @@ jobs:
           New-Item -ItemType Directory -Force -Path release
           Copy-Item "dist_win\dist\ILCHENKODEV.exe" "release\ILCHENKODEV.exe"
 
-      - name: Upload Windows EXE artifact
+      - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: ILCHENKODEV-Windows-EXE
           path: release/ILCHENKODEV.exe
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Release — attaches artifacts to GitHub Release on tag push
+# Release — attaches artifacts to GitHub Release when a version tag is pushed
 # ─────────────────────────────────────────────────────────────────────────────
   release:
     needs: [build-macos, build-windows]
@@ -138,11 +129,11 @@ jobs:
             ## ILCHENKODEV Bypass ${{ github.ref_name }}
 
             ### Установка
-            **macOS**: Открой `.dmg`, перетащи `.app` в Applications. Приложение запустится только в строке меню — в Dock его не будет.
-            **Windows**: Запусти `.exe` от имени администратора. Приложение появится только в системном трее.
+            **macOS**: Открой `.dmg`, перетащи `.app` в Applications.
+            Приложение запустится **только в строке меню** — в Dock его не будет.
 
-            ### Изменения
-            _See commit history for details._
+            **Windows**: Запусти `.exe` от имени администратора.
+            Приложение появится **только в системном трее** — без окна и без консоли.
           files: |
             artifacts/ILCHENKODEV-macOS.dmg
             artifacts/ILCHENKODEV.exe
