@@ -55,8 +55,26 @@ custom_args = ""
 selected_strategy = ""
 
 # Paths for logs and settings
-LOG_FILE_PATH = os.path.join(BASE_DIR, "bypass.log")
-CONFIG_PATH = os.path.join(BASE_DIR, "config.json")
+def get_user_data_dir():
+    if OS_TYPE == "Windows":
+        appdata = os.getenv("APPDATA")
+        if appdata:
+            path = os.path.join(appdata, "ILCHENKODEV-Bypass")
+        else:
+            path = os.path.join(os.path.expanduser("~"), ".ilchenkodev-bypass")
+    elif OS_TYPE == "Darwin":
+        path = os.path.join(os.path.expanduser("~"), "Library", "Application Support", "ILCHENKODEV-Bypass")
+    else:
+        path = os.path.join(os.path.expanduser("~"), ".config", "ilchenkodev-bypass")
+    try:
+        os.makedirs(path, exist_ok=True)
+    except Exception:
+        pass
+    return path
+
+USER_DATA_DIR = get_user_data_dir()
+LOG_FILE_PATH = os.path.join(USER_DATA_DIR, "bypass.log")
+CONFIG_PATH = os.path.join(USER_DATA_DIR, "config.json")
 
 def init_defaults():
     global custom_args, socks_port, sys_proxy
