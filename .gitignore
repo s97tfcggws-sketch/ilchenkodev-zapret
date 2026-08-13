@@ -22,3 +22,6 @@ env/
 build/
 dist/
 *.spec
+!dist_mac/*.spec
+!dist_win/*.spec
+
