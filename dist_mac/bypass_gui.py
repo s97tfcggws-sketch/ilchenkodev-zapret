@@ -430,7 +430,7 @@ def _find_asset(filename):
 
 def create_tray_icon_image(active=False, scale=8):
     # Try loading pre-rendered PNG assets first
-    fname = "active.png" if active else "inactive.png"
+    fname = "tray-tray-active.png" if active else "tray-intray-active.png"
     asset_path = _find_asset(fname)
     if asset_path:
         try:
@@ -765,9 +765,9 @@ def main():
     try:
         active_png = create_tray_icon_image(True)
         inactive_png = create_tray_icon_image(False)
-        active_png.save(os.path.join(BASE_DIR, "active.png"))
-        inactive_png.save(os.path.join(BASE_DIR, "inactive.png"))
-        append_log("Saved active.png and inactive.png to base folder.", "system")
+        active_png.save(os.path.join(BASE_DIR, "tray-tray-active.png"))
+        inactive_png.save(os.path.join(BASE_DIR, "tray-intray-active.png"))
+        append_log("Saved tray-active.png and intray-active.png to base folder.", "system")
     except Exception as e:
         append_log(f"Error saving icons to disk: {e}", "error")
         

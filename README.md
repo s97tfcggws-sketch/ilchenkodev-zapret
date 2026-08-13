@@ -1,84 +1,103 @@
-# ILCHENKODEV - DPI Bypass Dashboard
+# ILCHENKODEV Bypass
 
-Красивый, ультралегкий и минималистичный графический интерфейс для обхода замедлений и блокировок популярных ресурсов (YouTube, Discord и др.) на базе утилит `zapret` (`tpws` для macOS/Linux и `winws.exe` для Windows).
+Лёгкий tray-only GUI для обхода замедлений и блокировок (YouTube, Discord и др.) на базе утилит [zapret](https://github.com/bol-van/zapret) — `tpws` для macOS и `winws.exe` для Windows.
 
-Интерфейс построен на связке HTML/CSS/JS с нативным отображением через **pywebview** (использует встроенный в систему движок WebKit/Edge, а не раздутый Chromium), что обеспечивает молниеносный запуск и сверхнизкое потребление ресурсов.
-
----
-
-## ⚡ Особенности и преимущества
-
-* **Ультранизкое потребление RAM**: Всего **~127 МБ** оперативной памяти при работе (в отличие от Electron-приложений, требующих 400-500 МБ).
-* **Премиальный ЧБ-дизайн**: Строгий черно-белый минималистичный интерфейс в стиле концепций Google Material/flat design. Никаких лишних неоновых цветов, теней или тяжелых градиентов.
-* **Адаптивная верстка**: Интерфейс плавно подстраивается под любой размер экрана. На узких дисплеях боковое меню автоматически убирается в боковое бургер-меню.
-* **Интерактивный полноэкранный пульт**: Кнопка `Connect`/`Disconnect` занимает всю доступную область главного экрана для максимального удобства.
-* **Встроенный редактор списков правил**: Возможность редактировать списки доменов обхода (`list-google.txt`, `list-general.txt`, `list-exclude.txt`) прямо внутри приложения.
-* **Автоматическое управление прокси на macOS**: Приложение само настраивает системный прокси при запуске и отключает его при выходе (все команды выполняются в фоновых потоках без зависания GUI).
-* **Кроссплатформенность**: Полная поддержка macOS, Windows и Linux.
-* **Фирменные иконки**: Интегрированы брендовые иконки приложения для macOS (`icon.icns`) и Windows (`icon.ico`).
+Приложение живёт **только в строке меню (macOS)** или **системном трее (Windows)** — никаких окон, никакой консоли.
 
 ---
 
-## 🚀 Запуск из исходного кода
+## ✨ Особенности
 
-Для запуска проекта вручную вам понадобится Python 3:
-
-1. Склонируйте репозиторий или скачайте папку с проектом.
-2. Установите зависимости (на macOS также установите библиотеки интеграции с Cocoa/Webkit):
-   ```bash
-   pip install pywebview
-   # На macOS для нативного WebKit окна:
-   pip install pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-WebKit
-   ```
-3. Запустите скрипт:
-   * **На macOS / Linux**:
-     ```bash
-     python3 bypass_gui.py
-     ```
-   * **На Windows**:
-     ```cmd
-     python bypass_gui.py
-     ```
+- **Tray-only** — нет Dock-иконки, нет окна, нет консоли
+- **Автономный дистрибутив** — один `.app` или один `.exe` без зависимостей
+- **Умный выбор стратегии** — переключение между профилями прямо из трея
+- **Системный прокси** — автоматически настраивает SOCKS5 прокси на macOS
+- **Персистентные настройки** — конфиг и лог хранятся в пользовательской директории
+  - macOS: `~/Library/Application Support/ILCHENKODEV-Bypass/`
+  - Windows: `%APPDATA%\ILCHENKODEV-Bypass\`
+- **Фирменные иконки** — `tray-active.png` (зелёный) / `tray-inactive.png` (серый)
 
 ---
 
-## 📦 Сборка автономных версий (.EXE / .APP)
+## 🚀 Скачать готовую версию
 
-Вы можете собрать проект в один исполняемый файл, внутри которого уже будут находиться все необходимые утилиты (`bin/`), правила (`lists/`) и фирменная иконка приложения.
+Перейди в раздел [**Releases**](../../releases) и скачай нужный файл:
 
-### Сборка на macOS (.app пакет)
-Установите PyInstaller и соберите проект:
+| Платформа | Файл | Установка |
+|-----------|------|-----------|
+| macOS | `ILCHENKODEV-macOS.dmg` | Открой `.dmg`, перетащи `.app` в Applications |
+| Windows | `ILCHENKODEV.exe` | Запусти от имени **администратора** |
+
+---
+
+## 🔧 Запуск из исходного кода
+
+### macOS
 ```bash
-pip install pyinstaller
-pyinstaller --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.icns" --add-data "bin:bin" --add-data "lists:lists" bypass_gui.py
+pip install pillow pystray pyobjc
+python3 dist_mac/bypass_gui.py
 ```
-*Результат сборки (`ILCHENKODEV.app`) появится в папке `dist/`. Его можно перенести в «Программы» или на «Рабочий стол» — он полностью автономен.*
 
-### Сборка на Windows (единый автономный .exe файл)
-Запустите командную строку в папке проекта на Windows-ПК:
+### Windows
 ```cmd
-pip install pyinstaller
-pyinstaller --onefile --noconsole --clean --noconfirm --name="ILCHENKODEV" --icon="icon.ico" --add-data "bin;bin" --add-data "lists;lists" bypass_gui.py
+pip install pillow pystray
+python dist_win\bypass_gui.py
 ```
-*Результат сборки — единственный файл **`ILCHENKODEV.exe`** (без каких-либо папок и зависимостей вроде `_internal`). Он будет находиться в папке `dist/`.*
 
 ---
 
-## ☁️ Автоматическая сборка в облаке (GitHub Actions)
+## 📦 Сборка вручную
 
-В проект встроен рабочий процесс CI/CD для GitHub. Каждый раз, когда вы делаете `git push` в ветку `main` или `master`, GitHub автоматически запускает сборку для обеих операционных систем с привязкой иконки приложения:
-1. **Windows**: Компилирует проект в единый автономный файл `ILCHENKODEV.exe` с иконкой `icon.ico` и упаковывает его в `.zip` архив.
-2. **macOS**: Компилирует приложение с иконкой `icon.icns` и собирает его в готовый образ диска `.dmg` для простой установки перетаскиванием.
+Сборка происходит автоматически через GitHub Actions при пуше тега `v*`.
+Для ручной сборки локально:
 
-Вы сможете забрать готовые файлы в разделе **Actions** вашего GitHub-репозитория.
+### macOS
+```bash
+cd dist_mac
+pip install pyinstaller pillow pystray pyobjc
+pyinstaller --noconfirm --clean ILCHENKODEV.spec
+```
+
+### Windows
+```cmd
+cd dist_win
+pip install pyinstaller pillow pystray
+pyinstaller --noconfirm --clean ILCHENKODEV.spec
+```
 
 ---
 
-## 📁 Структура папок дистрибутива
+## 📁 Структура проекта
 
-* 📁 `dist_mac/` — автономная сборка исходного кода для macOS (содержит `icon.icns`).
-* 📁 `dist_win/` — сборка исходного кода с бат-файлами стратегий для Windows (содержит `icon.ico`).
-* 📁 `bin/` — скомпилированные утилиты обхода (`tpws` для macOS, `winws.exe` для Windows).
-* 📁 `lists/` — текстовые файлы правил доменов.
-* 📁 `.github/workflows/` — конфигурация автосборщика для GitHub.
-* 📄 `icon.ico` / `icon.icns` — файлы иконки для сборщиков.
+```
+dist_mac/               — исходники и ресурсы для macOS-сборки
+  bypass_gui.py         — основной скрипт приложения
+  ILCHENKODEV.spec      — конфиг PyInstaller
+  icon.icns             — иконка приложения (macOS)
+  tray-active.png       — иконка трея (активен)
+  tray-inactive.png     — иконка трея (выключен)
+  bin/mac/              — нативные бинарники (tpws, mdig, ip2net)
+  lists/                — списки доменов и IP
+
+dist_win/               — исходники и ресурсы для Windows-сборки
+  bypass_gui.py         — основной скрипт приложения
+  ILCHENKODEV.spec      — конфиг PyInstaller
+  icon.ico              — иконка приложения (Windows)
+  tray-active.png       — иконка трея (активен)
+  tray-inactive.png     — иконка трея (выключен)
+  bin/                  — нативные бинарники (winws.exe, WinDivert и др.)
+  lists/                — списки доменов и IP
+  utils/                — вспомогательные файлы
+  *.bat                 — стратегии обхода
+
+.github/workflows/      — CI/CD: автосборка и публикация релиза
+```
+
+---
+
+## ☁️ GitHub Actions CI/CD
+
+При пуше тега `v*` (например `v1.0.8`) автоматически:
+1. Собирается `.app` + `.dmg` для macOS
+2. Собирается `.exe` для Windows
+3. Создаётся GitHub Release с обоими файлами

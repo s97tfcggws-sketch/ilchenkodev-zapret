@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -18,10 +18,28 @@ venv/
 ENV/
 env/
 
-# PyInstaller
+# PyInstaller — build artefacts (ignored everywhere except spec files inside dist_*)
 build/
 dist/
+dist_mac/build/
+dist_mac/dist/
+dist_win/build/
+dist_win/dist/
 *.spec
 !dist_mac/*.spec
 !dist_win/*.spec
 
+# IDE
+.idea/
+*.iml
+
+# Runtime / user data written by the app (never committed)
+dist_mac/bypass.log
+dist_mac/config.json
+
+# Temporary image sources used during icon generation
+dist_mac/*_src.jpg
+dist_mac/*_src.png
+
+# Backup files
+*.backup
