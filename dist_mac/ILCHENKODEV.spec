@@ -68,8 +68,8 @@ app = BUNDLE(
         'NSHighResolutionCapable': True,
         'CFBundleName': 'ILCHENKODEV Bypass',
         'CFBundleDisplayName': 'ILCHENKODEV Bypass',
-        'CFBundleShortVersionString': '1.0.0',
-        'CFBundleVersion': '1.0.0',
+        'CFBundleShortVersionString': '1.0.8',
+        'CFBundleVersion': '1.0.8',
         'NSAppleEventsUsageDescription': 'Used for configuration dialogs.',
     },
 )
