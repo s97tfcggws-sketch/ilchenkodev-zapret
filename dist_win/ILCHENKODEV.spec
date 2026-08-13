@@ -13,9 +13,11 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('bin',   'bin'),
-        ('lists', 'lists'),
-        ('utils', 'utils'),
+        ('bin',          'bin'),
+        ('lists',        'lists'),
+        ('utils',        'utils'),
+        ('active.png',   '.'),
+        ('inactive.png', '.'),
     ] + bat_files,
     hiddenimports=[
         'pystray',
@@ -41,6 +43,7 @@ exe = EXE(
     a.datas,
     [],
     name='ILCHENKODEV',
+    icon='icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

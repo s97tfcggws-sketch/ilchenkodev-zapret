@@ -430,7 +430,32 @@ def save_config():
 # Clean, symmetric padlock icon for system tray.
 # Locked  : U-arch, both legs in body.
 # Unlocked: same centred arch, left leg in body, right leg pulled out (short stub).
+def _find_asset(filename):
+    """Search for a bundled asset file in MEIPASS, BASE_DIR, and script dir."""
+    candidates = []
+    if hasattr(sys, '_MEIPASS'):
+        candidates.append(os.path.join(sys._MEIPASS, filename))
+    candidates.append(os.path.join(BASE_DIR, filename))
+    candidates.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename))
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return None
+
 def create_tray_icon_image(active=False, scale=8):
+    # Try loading pre-rendered PNG assets first
+    fname = "active.png" if active else "inactive.png"
+    asset_path = _find_asset(fname)
+    if asset_path:
+        try:
+            img = Image.open(asset_path).convert("RGBA")
+            target = 22 * scale
+            img = img.resize((target, target), Image.LANCZOS)
+            return img
+        except Exception:
+            pass
+
+    # Fallback: programmatic render
     SIZE = 22 * scale
     img  = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     d    = ImageDraw.Draw(img)
@@ -453,21 +478,14 @@ def create_tray_icon_image(active=False, scale=8):
     gap    = round(1.2 * scale)
     arc_cy = by0 - gap - sir
 
-    # Body
     d.rounded_rectangle([bx0, by0, bx1, by1], radius=br, fill=K)
-
-    # Arch (same for both states)
     d.pieslice([scx-sor, arc_cy-sor, scx+sor, arc_cy+sor], 180, 360, fill=K)
     d.pieslice([scx-sir, arc_cy-sir, scx+sir, arc_cy+sir], 180, 360, fill=C)
-
-    # Left leg — always in body
     d.rectangle([scx-sor, arc_cy, scx-sir, by0], fill=K)
 
     if not active:
-        # LOCKED: right leg also in body
         d.rectangle([scx+sir, arc_cy, scx+sor, by0], fill=K)
     else:
-        # UNLOCKED: right leg pulled out, short stub above body
         stub = round(2.5 * scale)
         d.rectangle([scx+sir, arc_cy, scx+sor, arc_cy + stub], fill=K)
 

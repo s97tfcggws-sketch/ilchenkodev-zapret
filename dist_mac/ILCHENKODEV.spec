@@ -8,8 +8,10 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('bin',   'bin'),
-        ('lists', 'lists'),
+        ('bin',           'bin'),
+        ('lists',         'lists'),
+        ('active.png',    '.'),
+        ('inactive.png',  '.'),
     ],
     hiddenimports=[
         'pystray',
@@ -36,6 +38,7 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name='ILCHENKODEV Bypass',
+    icon='icon.icns',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -60,6 +63,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='ILCHENKODEV Bypass.app',
+    icon='icon.icns',
     bundle_identifier='dev.ilchenko.bypass',
     info_plist={
         # Hide from Dock AND Cmd+Tab switcher entirely — menu bar only
