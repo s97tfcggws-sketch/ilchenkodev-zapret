@@ -13,11 +13,9 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('bin',              'bin'),
-        ('lists',            'lists'),
-        ('utils',            'utils'),
-        ('tray-active.png',  '.'),
-        ('tray-inactive.png','.'),
+        ('bin',   'bin'),
+        ('lists', 'lists'),
+        ('utils', 'utils'),
     ] + bat_files,
     hiddenimports=[
         'pystray',

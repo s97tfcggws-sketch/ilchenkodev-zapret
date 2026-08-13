@@ -8,10 +8,8 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('bin',              'bin'),
-        ('lists',            'lists'),
-        ('tray-active.png',  '.'),
-        ('tray-inactive.png','.'),
+        ('bin',   'bin'),
+        ('lists', 'lists'),
     ],
     hiddenimports=[
         'pystray',
