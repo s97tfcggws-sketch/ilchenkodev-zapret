@@ -718,7 +718,7 @@ def main():
     # Reset log file on startup
     try:
         with open(LOG_FILE_PATH, "w", encoding="utf-8") as f:
-            f.write("=== ILCHENKODEV Bypass Log Started ===\n")
+            f.write("=== ilchenkodev-zapret Log Started ===\n")
     except Exception:
         pass
         
@@ -748,9 +748,9 @@ def main():
     initial_image = create_tray_icon_image(False)
     
     global_icon = pystray.Icon(
-        "ilchenkodev_bypass",
+        "ilchenkodev_zapret",
         initial_image,
-        "ILCHENKODEV Bypass"
+        "ilchenkodev-zapret"
     )
     
     rebuild_menu(global_icon)

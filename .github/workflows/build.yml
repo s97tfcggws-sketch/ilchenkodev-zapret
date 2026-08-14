@@ -40,27 +40,27 @@ jobs:
           mkdir -p release
           # create-dmg with nice installer window; fallback to hdiutil if it fails
           create-dmg \
-            --volname "ILCHENKODEV Bypass" \
+            --volname "ilchenkodev-zapret" \
             --window-pos 200 120 \
             --window-size 540 380 \
             --icon-size 128 \
-            --icon "ILCHENKODEV Bypass.app" 130 190 \
-            --hide-extension "ILCHENKODEV Bypass.app" \
+            --icon "ilchenkodev-zapret.app" 130 190 \
+            --hide-extension "ilchenkodev-zapret.app" \
             --app-drop-link 410 190 \
             --no-internet-enable \
-            "release/ILCHENKODEV-macOS.dmg" \
-            "dist_mac/dist/ILCHENKODEV Bypass.app" \
+            "release/ilchenkodev-zapret-for-mac.dmg" \
+            "dist_mac/dist/ilchenkodev-zapret.app" \
           || hdiutil create \
-               -volname "ILCHENKODEV Bypass" \
-               -srcfolder "dist_mac/dist/ILCHENKODEV Bypass.app" \
+               -volname "ilchenkodev-zapret" \
+               -srcfolder "dist_mac/dist/ilchenkodev-zapret.app" \
                -ov -format UDZO \
-               "release/ILCHENKODEV-macOS.dmg"
+               "release/ilchenkodev-zapret-for-mac.dmg"
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ILCHENKODEV-macOS-DMG
-          path: release/ILCHENKODEV-macOS.dmg
+          name: ilchenkodev-zapret-macOS-DMG
+          path: release/ilchenkodev-zapret-for-mac.dmg
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Windows — single standalone .exe, tray only, no console, no taskbar window
@@ -91,13 +91,13 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path release
-          Copy-Item "dist_win\dist\ILCHENKODEV.exe" "release\ILCHENKODEV.exe"
+          Copy-Item "dist_win\dist\ilchenkodev-zapret.exe" "release\ilchenkodev-zapret-for-win.exe"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ILCHENKODEV-Windows-EXE
-          path: release/ILCHENKODEV.exe
+          name: ilchenkodev-zapret-Windows-EXE
+          path: release/ilchenkodev-zapret-for-win.exe
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Release — attaches artifacts to GitHub Release when a version tag is pushed
@@ -112,30 +112,36 @@ jobs:
       - name: Download macOS DMG
         uses: actions/download-artifact@v4
         with:
-          name: ILCHENKODEV-macOS-DMG
+          name: ilchenkodev-zapret-macOS-DMG
           path: artifacts
 
       - name: Download Windows EXE
         uses: actions/download-artifact@v4
         with:
-          name: ILCHENKODEV-Windows-EXE
+          name: ilchenkodev-zapret-Windows-EXE
           path: artifacts
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "${{ github.ref_name }}"
+          name: "ilchenkodev-zapret ${{ github.ref_name }}"
           body: |
-            ## ILCHENKODEV Bypass ${{ github.ref_name }}
+            ## ilchenkodev-zapret ${{ github.ref_name }}
+
+            ### Скачать
+            | Платформа | Файл |
+            |-----------|------|
+            | macOS | `ilchenkodev-zapret-for-mac.dmg` |
+            | Windows | `ilchenkodev-zapret-for-win.exe` |
 
             ### Установка
             **macOS**: Открой `.dmg`, перетащи `.app` в Applications.
-            Приложение запустится **только в строке меню** — в Dock его не будет.
+            Приложение работает **только в строке меню** — в Dock его не будет.
 
-            **Windows**: Запусти `.exe` от имени администратора.
+            **Windows**: Запусти `.exe` от имени **администратора**.
             Приложение появится **только в системном трее** — без окна и без консоли.
           files: |
-            artifacts/ILCHENKODEV-macOS.dmg
-            artifacts/ILCHENKODEV.exe
+            artifacts/ilchenkodev-zapret-for-mac.dmg
+            artifacts/ilchenkodev-zapret-for-win.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -35,7 +35,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='ILCHENKODEV Bypass',
+    name='ilchenkodev-zapret',
     icon='icon.icns',
     debug=False,
     bootloader_ignore_signals=False,
@@ -55,23 +55,23 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='ILCHENKODEV Bypass',
+    name='ilchenkodev-zapret',
 )
 
 app = BUNDLE(
     coll,
-    name='ILCHENKODEV Bypass.app',
+    name='ilchenkodev-zapret.app',
     icon='icon.icns',
-    bundle_identifier='dev.ilchenko.bypass',
+    bundle_identifier='dev.ilchenko.zapret',
     info_plist={
         # Hide from Dock AND Cmd+Tab switcher entirely — menu bar only
         'LSUIElement': True,
         # Retina / high-DPI support
         'NSHighResolutionCapable': True,
-        'CFBundleName': 'ILCHENKODEV Bypass',
-        'CFBundleDisplayName': 'ILCHENKODEV Bypass',
-        'CFBundleShortVersionString': '1.0.8',
-        'CFBundleVersion': '1.0.8',
+        'CFBundleName': 'ilchenkodev-zapret',
+        'CFBundleDisplayName': 'ilchenkodev-zapret',
+        'CFBundleShortVersionString': '1.1.0',
+        'CFBundleVersion': '1.1.0',
         'NSAppleEventsUsageDescription': 'Used for configuration dialogs.',
     },
 )

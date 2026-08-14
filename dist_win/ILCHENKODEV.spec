@@ -40,7 +40,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='ILCHENKODEV',
+    name='ilchenkodev-zapret',
     icon='icon.ico',
     debug=False,
     bootloader_ignore_signals=False,

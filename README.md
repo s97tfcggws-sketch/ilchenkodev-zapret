@@ -1,36 +1,39 @@
-# ILCHENKODEV Bypass
+# ilchenkodev-zapret
 
-Лёгкий tray-only GUI для обхода замедлений и блокировок (YouTube, Discord и др.) на базе утилит [zapret](https://github.com/bol-van/zapret) — `tpws` для macOS и `winws.exe` для Windows.
+<p align="center">
+  <img src="icon.png" width="128" height="128" alt="ilchenkodev-zapret icon">
+</p>
+
+Лёгкий tray-only инструмент для обхода замедлений и блокировок (YouTube, Discord и др.) на базе [zapret](https://github.com/bol-van/zapret) — `tpws` для macOS, `winws.exe` для Windows.
 
 Приложение живёт **только в строке меню (macOS)** или **системном трее (Windows)** — никаких окон, никакой консоли.
 
 ---
 
-## ✨ Особенности
+## Скачать
 
-- **Tray-only** — нет Dock-иконки, нет окна, нет консоли
-- **Автономный дистрибутив** — один `.app` или один `.exe` без зависимостей
-- **Умный выбор стратегии** — переключение между профилями прямо из трея
-- **Системный прокси** — автоматически настраивает SOCKS5 прокси на macOS
-- **Персистентные настройки** — конфиг и лог хранятся в пользовательской директории
-  - macOS: `~/Library/Application Support/ILCHENKODEV-Bypass/`
-  - Windows: `%APPDATA%\ILCHENKODEV-Bypass\`
-- **Фирменные иконки** — `tray-active.png` (зелёный) / `tray-inactive.png` (серый)
-
----
-
-## 🚀 Скачать готовую версию
-
-Перейди в раздел [**Releases**](../../releases) и скачай нужный файл:
+Перейди в [**Releases**](../../releases) и скачай нужный файл:
 
 | Платформа | Файл | Установка |
 |-----------|------|-----------|
-| macOS | `ILCHENKODEV-macOS.dmg` | Открой `.dmg`, перетащи `.app` в Applications |
-| Windows | `ILCHENKODEV.exe` | Запусти от имени **администратора** |
+| macOS | `ilchenkodev-zapret-for-mac.dmg` | Открой `.dmg` → перетащи `.app` в Applications |
+| Windows | `ilchenkodev-zapret-for-win.exe` | Запусти от имени **администратора** |
 
 ---
 
-## 🔧 Запуск из исходного кода
+## Особенности
+
+- **Tray-only** — нет Dock-иконки, нет окна, нет консоли
+- **Автономный дистрибутив** — один `.app` или один `.exe`, без зависимостей
+- **Выбор стратегии** — переключение между профилями обхода прямо из трея
+- **Системный прокси** — автоматическая настройка SOCKS5 на macOS
+- **Персистентный конфиг** — настройки и логи хранятся в:
+  - macOS: `~/Library/Application Support/ILCHENKODEV-Bypass/`
+  - Windows: `%APPDATA%\ILCHENKODEV-Bypass\`
+
+---
+
+## Запуск из исходного кода
 
 ### macOS
 ```bash
@@ -46,19 +49,18 @@ python dist_win\bypass_gui.py
 
 ---
 
-## 📦 Сборка вручную
+## Сборка
 
-Сборка происходит автоматически через GitHub Actions при пуше тега `v*`.
-Для ручной сборки локально:
+Автоматическая сборка через GitHub Actions при пуше тега `v*`.
 
-### macOS
+### Ручная сборка (macOS)
 ```bash
 cd dist_mac
 pip install pyinstaller pillow pystray pyobjc
 pyinstaller --noconfirm --clean ILCHENKODEV.spec
 ```
 
-### Windows
+### Ручная сборка (Windows)
 ```cmd
 cd dist_win
 pip install pyinstaller pillow pystray
@@ -67,37 +69,38 @@ pyinstaller --noconfirm --clean ILCHENKODEV.spec
 
 ---
 
-## 📁 Структура проекта
+## Структура проекта
 
 ```
-dist_mac/               — исходники и ресурсы для macOS-сборки
-  bypass_gui.py         — основной скрипт приложения
-  ILCHENKODEV.spec      — конфиг PyInstaller
-  icon.icns             — иконка приложения (macOS)
-  tray-active.png       — иконка трея (активен)
-  tray-inactive.png     — иконка трея (выключен)
-  bin/mac/              — нативные бинарники (tpws, mdig, ip2net)
-  lists/                — списки доменов и IP
+dist_mac/                — сборка для macOS
+  bypass_gui.py          — основной скрипт
+  ILCHENKODEV.spec       — конфиг PyInstaller
+  icon.icns              — иконка приложения
+  bin/mac/               — бинарники (tpws, mdig, ip2net)
+  lists/                 — списки доменов и IP
 
-dist_win/               — исходники и ресурсы для Windows-сборки
-  bypass_gui.py         — основной скрипт приложения
-  ILCHENKODEV.spec      — конфиг PyInstaller
-  icon.ico              — иконка приложения (Windows)
-  tray-active.png       — иконка трея (активен)
-  tray-inactive.png     — иконка трея (выключен)
-  bin/                  — нативные бинарники (winws.exe, WinDivert и др.)
-  lists/                — списки доменов и IP
-  utils/                — вспомогательные файлы
-  *.bat                 — стратегии обхода
+dist_win/                — сборка для Windows
+  bypass_gui.py          — основной скрипт
+  ILCHENKODEV.spec       — конфиг PyInstaller
+  icon.ico               — иконка приложения
+  bin/                   — бинарники (winws.exe, WinDivert)
+  lists/                 — списки доменов и IP
+  *.bat                  — стратегии обхода
 
-.github/workflows/      — CI/CD: автосборка и публикация релиза
+.github/workflows/       — CI/CD: автосборка и публикация релиза
 ```
 
 ---
 
-## ☁️ GitHub Actions CI/CD
+## CI/CD
 
-При пуше тега `v*` (например `v1.0.8`) автоматически:
-1. Собирается `.app` + `.dmg` для macOS
-2. Собирается `.exe` для Windows
+При пуше тега `v*` (например `v1.1.0`) автоматически:
+1. Собирается `.app` → `ilchenkodev-zapret-for-mac.dmg`
+2. Собирается `ilchenkodev-zapret-for-win.exe`
 3. Создаётся GitHub Release с обоими файлами
+
+---
+
+## Лицензия
+
+Основан на [zapret](https://github.com/bol-van/zapret) от bol-van.
