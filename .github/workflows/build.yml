@@ -30,7 +30,7 @@ jobs:
       - name: Build .app with PyInstaller
         working-directory: dist_mac
         run: |
-          pyinstaller --noconfirm --clean ILCHENKODEV.spec
+          pyinstaller --noconfirm --clean zapret.spec
 
       - name: Install create-dmg
         run: brew install create-dmg
@@ -38,9 +38,10 @@ jobs:
       - name: Create .dmg
         run: |
           mkdir -p release
-          # create-dmg with nice installer window; fallback to hdiutil if it fails
+          # create-dmg with branded background; fallback to hdiutil if it fails
           create-dmg \
             --volname "ilchenkodev-zapret" \
+            --background "dist_mac/dmg-background@2x.png" \
             --window-pos 200 120 \
             --window-size 540 380 \
             --icon-size 128 \
@@ -85,7 +86,7 @@ jobs:
         working-directory: dist_win
         shell: pwsh
         run: |
-          pyinstaller --noconfirm --clean ILCHENKODEV.spec
+          pyinstaller --noconfirm --clean zapret.spec
 
       - name: Collect release files
         shell: pwsh

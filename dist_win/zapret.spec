@@ -9,7 +9,7 @@ import os
 bat_files = [(f, '.') for f in glob.glob('*.bat')]
 
 a = Analysis(
-    ['bypass_gui.py'],
+    ['app.py'],
     pathex=[],
     binaries=[],
     datas=[

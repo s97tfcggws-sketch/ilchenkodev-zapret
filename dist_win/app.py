@@ -13,6 +13,20 @@ import subprocess
 import pystray
 from PIL import Image, ImageDraw
 
+# ── Windows: hide console window and remove from taskbar immediately ──────────
+# Must run before any window is created. PyInstaller --noconsole already
+# suppresses the console; this is a belt-and-suspenders safeguard.
+if sys.platform == 'win32':
+    try:
+        import ctypes
+        # SW_HIDE = 0 — hide the console window if it somehow appeared
+        hwnd = ctypes.windll.kernel32.GetConsoleWindow()
+        if hwnd:
+            ctypes.windll.user32.ShowWindow(hwnd, 0)
+    except Exception:
+        pass
+
+
 # Global State
 OS_TYPE = platform.system()
 bypass_process = None
@@ -169,25 +183,36 @@ def set_macos_proxy_state(state, port="10800"):
     t = threading.Thread(target=run_proxy_setup, daemon=True)
     t.start()
 
-# Strategy loaders
+# Strategy definitions — clean names mapped to tpws arguments
+MAC_STRATEGIES = {
+    "YouTube / Discord (рекомендуется)":
+        "--split-pos=midsld --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "YouTube / Discord + TLS":
+        "--tlsrec=1 --split-pos=midsld --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "Стандартный":
+        "--split-pos=1 --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "Стандартный + TLS":
+        "--tlsrec=1 --split-pos=1 --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "OOB Host":
+        "--split-pos=host --oob --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "OOB Host + TLS":
+        "--tlsrec=1 --split-pos=host --oob --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt",
+    "Весь трафик":
+        "--split-pos=1 --disorder",
+    "Весь трафик + TLS":
+        "--tlsrec=1 --split-pos=1 --disorder",
+    "Свои параметры":
+        "",
+}
+
 def get_strategies():
     if OS_TYPE == "Windows":
         bat_files = glob.glob(os.path.join(BASE_DIR, "*.bat"))
         filtered_bats = [os.path.basename(f) for f in bat_files if os.path.basename(f) != "service.bat"]
         filtered_bats.sort()
-        return filtered_bats if filtered_bats else ["No .bat files found"]
+        return filtered_bats if filtered_bats else ["Стратегии не найдены"]
     else:
-        return [
-            "Midsld Split (Default - Best for YouTube/Discord)",
-            "Midsld Alt (TLS Record + Midsld Split)",
-            "General (Split Pos 1 + Disorder)",
-            "General Alt (TLS Record + Split Pos 1)",
-            "OOB Host (Out-of-band Host Split)",
-            "OOB Host Alt (TLS Record + OOB Host)",
-            "All Traffic (No Hostlist, Split Pos 1)",
-            "All Traffic Alt (No Hostlist, TLS Record + Split)",
-            "Custom Parameters"
-        ]
+        return list(MAC_STRATEGIES.keys())
 
 def get_strategy_arguments(strategy):
     if OS_TYPE == "Windows":
@@ -210,24 +235,7 @@ def get_strategy_arguments(strategy):
                 return f"Error loading bat: {e}"
         return ""
     else:
-        if strategy.startswith("Midsld Split"):
-            return "--split-pos=midsld --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt"
-        elif strategy.startswith("Midsld Alt"):
-            return "--tlsrec=1 --split-pos=midsld --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt"
-        elif strategy.startswith("General (Split"):
-            return "--split-pos=1 --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt"
-        elif strategy.startswith("General Alt"):
-            return "--tlsrec=1 --split-pos=1 --disorder --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt"
-        elif strategy.startswith("OOB Host ("):
-            return "--split-pos=host --oob --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt"
-        elif strategy.startswith("OOB Host Alt"):
-            return "--tlsrec=1 --split-pos=host --oob --hostlist=lists/list-google.txt --hostlist=lists/list-general.txt --hostlist-exclude=lists/list-exclude.txt"
-        elif strategy.startswith("All Traffic ("):
-            return "--split-pos=1 --disorder"
-        elif strategy.startswith("All Traffic Alt"):
-            return "--tlsrec=1 --split-pos=1 --disorder"
-        else:
-            return "--split-pos=1 --disorder"
+        return MAC_STRATEGIES.get(strategy, "--split-pos=1 --disorder")
 
 # Core start and stop handlers
 def start_bypass_service(port_val, sys_proxy_val, custom_args_val, strategy_val):
@@ -413,9 +421,9 @@ def save_config():
     except Exception as e:
         append_log(f"Error saving config.json: {e}", "error")
 
-# Clean, symmetric padlock icon for macOS menu bar.
-# Inactive (locked)  : black — macOS template mode auto-tints for dark/light.
-# Active   (unlocked): vibrant green — template disabled so colour is preserved.
+# Clean, symmetric padlock icon for system tray.
+# Locked  : U-arch, both legs in body.
+# Unlocked: same centred arch, left leg in body, right leg pulled out (short stub).
 def create_tray_icon_image(active=False, scale=8):
     SIZE = 22 * scale
     img  = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
@@ -460,35 +468,6 @@ def create_tray_icon_image(active=False, scale=8):
 
     return img
 
-
-
-# ── macOS: Override pystray's _assert_image so the full-resolution icon is
-# sent to NSImage with the correct point size and template flag set.
-# This bypasses pystray's forced resize to 22×22 px and gives crisp Retina rendering.
-def _setup_macos_hires_icon(icon):
-    if OS_TYPE != "Darwin":
-        return
-    try:
-        import io, types
-        import AppKit, Foundation
-
-        def _assert_image_hires(self):
-            if not self._icon:
-                return
-            buf = io.BytesIO()
-            self._icon.save(buf, "PNG")
-            data = Foundation.NSData(buf.getvalue())
-            nsimg = AppKit.NSImage.alloc().initWithData_(data)
-            # Logical size = 22 pt; full pixel data stays → sharp on Retina @2x/@3x.
-            nsimg.setSize_((22, 22))
-            # Both states have colour (red / green) — template disabled to preserve it.
-            nsimg.setTemplate_(False)
-            self._icon_image = nsimg
-            self._status_item.button().setImage_(nsimg)
-
-        icon._assert_image = types.MethodType(_assert_image_hires, icon)
-    except Exception as e:
-        append_log(f"[icon] hires patch skipped: {e}", "warn")
 
 # Native OS prompt input dialogs
 def show_input_dialog(prompt_text, title_text, default_val=""):
@@ -546,7 +525,7 @@ def show_notification(title, message):
 def select_strategy_action(strategy):
     global selected_strategy, custom_args
     selected_strategy = strategy
-    if strategy != "Custom Parameters":
+    if strategy != "Свои параметры":
         custom_args = get_strategy_arguments(strategy)
     save_config()
     
@@ -606,7 +585,7 @@ def change_args_action(icon, item):
     new_args = show_input_dialog("Введите дополнительные параметры запуска:", "Дополнительные параметры", custom_args)
     if new_args is not None:
         custom_args = new_args.strip()
-        selected_strategy = "Custom Parameters"
+        selected_strategy = "Свои параметры"
         save_config()
         
         if bypass_running:
@@ -654,13 +633,13 @@ def make_open_file_action(path):
 def rebuild_menu(icon=None):
     from pystray import MenuItem as item, Menu
 
-    # Status indicator (non-clickable)
+    # Status & toggle
     if bypass_running:
-        status_label = "🟢  Обход активен"
-        toggle_label = "Выключить обход"
+        status_label = "● Активен"
+        toggle_label = "⏹ Остановить"
     else:
-        status_label = "🔴  Обход остановлен"
-        toggle_label = "Включить обход"
+        status_label = "○ Выключен"
+        toggle_label = "▶ Запустить"
 
     # Strategy submenu
     strategies = get_strategies()
@@ -670,23 +649,13 @@ def rebuild_menu(icon=None):
             item(s, make_strategy_action(s), checked=make_strategy_checked(s))
         )
     strategy_submenu = Menu(*strategy_items) if strategy_items else Menu(
-        item("Стратегии не найдены", lambda i, it: None, enabled=False)
+        item("Не найдены", lambda i, it: None, enabled=False)
     )
-    cur_strat = selected_strategy if selected_strategy else "—"
-    strategy_label = f"Стратегия: {cur_strat[:28]}"
-
-    # Settings submenu
-    settings_items = [
-        item(f"SOCKS-порт: {socks_port}", change_port_action),
-        item("Системный прокси", toggle_proxy_action, checked=lambda it: sys_proxy),
-        item("Доп. параметры…", change_args_action),
-    ]
-    settings_submenu = Menu(*settings_items)
 
     # Lists submenu
     lists_dir = os.path.join(BASE_DIR, "lists")
     list_display = [
-        ("Google / YouTube",  "list-google.txt"),
+        ("YouTube / Google",  "list-google.txt"),
         ("Общий список",      "list-general.txt"),
         ("Исключения",        "list-exclude.txt"),
     ]
@@ -696,18 +665,25 @@ def rebuild_menu(icon=None):
     ]
     lists_submenu = Menu(*list_items)
 
+    # Settings submenu (port, proxy, args, lists, log)
+    settings_items = [
+        item(f"Порт: {socks_port}", change_port_action),
+        item("Системный прокси", toggle_proxy_action, checked=lambda it: sys_proxy),
+        item("Параметры…", change_args_action),
+        Menu.SEPARATOR,
+        item("Списки доменов", lists_submenu),
+        item("Логи", show_logs_action),
+    ]
+    settings_submenu = Menu(*settings_items)
+
     menu_items = [
-        item(status_label,        lambda i, it: None, enabled=False),
+        item(status_label,    lambda i, it: None, enabled=False),
+        item(toggle_label,    toggle_bypass_action),
         Menu.SEPARATOR,
-        item(toggle_label,        toggle_bypass_action),
+        item("Стратегия",     strategy_submenu),
+        item("Настройки",     settings_submenu),
         Menu.SEPARATOR,
-        item(strategy_label,      strategy_submenu),
-        item("Настройки",         settings_submenu),
-        item("Списки блокировок", lists_submenu),
-        Menu.SEPARATOR,
-        item("Просмотр логов",    show_logs_action),
-        Menu.SEPARATOR,
-        item("Выход",             exit_action),
+        item("Выход",         exit_action),
     ]
 
     new_menu = Menu(*menu_items)
@@ -719,7 +695,6 @@ def update_tray_state():
     global global_icon
     if global_icon:
         rebuild_menu(global_icon)
-        global_icon._is_active = bypass_running
         global_icon.icon = create_tray_icon_image(bypass_running)
 
 # Main Application Entry Point
@@ -744,23 +719,13 @@ def main():
         
     # Load configuration
     load_config()
-    
-    # Save beautiful active/inactive vector-style PNGs to disk
-    try:
-        active_png = create_tray_icon_image(True)
-        inactive_png = create_tray_icon_image(False)
-        active_png.save(os.path.join(BASE_DIR, "tray-tray-active.png"))
-        inactive_png.save(os.path.join(BASE_DIR, "tray-intray-active.png"))
-        append_log("Saved tray-active.png and intray-active.png to base folder.", "system")
-    except Exception as e:
-        append_log(f"Error saving icons to disk: {e}", "error")
         
     # Set default strategy if none selected
     strategies = get_strategies()
     if not selected_strategy or selected_strategy not in strategies:
         if strategies:
             selected_strategy = strategies[0]
-            if selected_strategy != "Custom Parameters":
+            if selected_strategy != "Свои параметры":
                 custom_args = get_strategy_arguments(selected_strategy)
             save_config()
             
@@ -774,7 +739,6 @@ def main():
     )
     
     rebuild_menu(global_icon)
-    _setup_macos_hires_icon(global_icon)
     global_icon.run()
 
 if __name__ == "__main__":

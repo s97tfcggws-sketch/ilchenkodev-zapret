@@ -4,7 +4,7 @@
 # do NOT import them explicitly.
 
 a = Analysis(
-    ['bypass_gui.py'],
+    ['app.py'],
     pathex=[],
     binaries=[],
     datas=[
